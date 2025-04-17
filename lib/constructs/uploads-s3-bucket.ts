@@ -14,11 +14,7 @@ export class UploadsS3Bucket extends Construct {
 		return new Bucket(this, "UploadsBucket", {
 			bucketName: "hoop-archives-uploads",
 			versioned: false,
-			blockPublicAccess: new BlockPublicAccess({
-				blockPublicAcls: false,
-				blockPublicPolicy: false,
-			}),
-			publicReadAccess: true,
+			blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
 			removalPolicy: RemovalPolicy.DESTROY,
 			autoDeleteObjects: true,
 		});

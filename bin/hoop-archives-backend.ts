@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib";
-import { BackendCdkStack } from "../lib/backend-cdk-stack";
+import { HoopArchivesBackendStack } from "../lib/hoop-archives-backend-stack";
 
 const app = new cdk.App();
-new BackendCdkStack(app, "BackendCdkStack", {
+new HoopArchivesBackendStack(app, "HoopArchivesBackendStack", {
 	/* If you don't specify 'env', this stack will be environment-agnostic.
 	 * Account/Region-dependent features and context lookups will not work,
 	 * but a single synthesized template can be deployed anywhere. */

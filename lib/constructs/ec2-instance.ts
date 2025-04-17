@@ -7,6 +7,7 @@ import {
 	KeyPair,
 	MachineImage,
 	SecurityGroup,
+	SubnetType,
 	UserData,
 	Vpc,
 } from "aws-cdk-lib/aws-ec2";
@@ -21,8 +22,21 @@ export class Ec2Instance extends Construct {
 	}
 
 	private createInstance(): Instance {
+		const userData = UserData.forLinux();
+		userData.addCommands(
+			"#!/bin/bash",
+			"sudo yum update -y",
+			"curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -",
+			"sudo yum install -y nodejs",
+			"sudo yum install -y git",
+			"sudo yum install -y aws-cli",
+			"sudo npm install -g aws-cdk"
+		);
+
 		return new Instance(this, "Instance", {
 			vpc: Vpc.fromLookup(this, "Vpc", { vpcId: "vpc-02c1e374afcaeb1fd" }),
+			vpcSubnets: { subnetType: SubnetType.PUBLIC },
+			associatePublicIpAddress: true,
 			instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.XLARGE),
 			machineImage: MachineImage.latestAmazonLinux2023(),
 			securityGroup: SecurityGroup.fromSecurityGroupId(
@@ -37,7 +51,7 @@ export class Ec2Instance extends Construct {
 					volume: BlockDeviceVolume.ebs(20),
 				},
 			],
-			// userData: UserData.forLinux({  }), // script for installations
+			userData,
 		});
 	}
 }

@@ -4,9 +4,12 @@ import { Instance } from "aws-cdk-lib/aws-ec2";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { Ec2Instance } from "./constructs/ec2-instance";
+import { UploadsS3Bucket } from "./constructs/uploads-s3-bucket";
+import { GamesDdbTable } from "./constructs/games-ddb-table";
+import { GameClipsDdbTable } from "./constructs/game-clips-ddb-table";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
-export class BackendCdkStack extends Stack {
+export class HoopArchivesBackendStack extends Stack {
 	readonly uploadsBucket: Bucket;
 	readonly gamesTable: Table;
 	readonly gameClipsTable: Table;
@@ -15,11 +18,11 @@ export class BackendCdkStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
 
-		// this.uploadsBucket = new UploadsS3Bucket(this, "UplodsBucket").bucket;
+		this.uploadsBucket = new UploadsS3Bucket(this, "UplodsBucket").bucket;
 
-		// this.gamesTable = new GamesDdbTable(this, "GamesTable").table;
+		this.gamesTable = new GamesDdbTable(this, "GamesTable").table;
 
-		// this.gameClipsTable = new GameClipsDdbTable(this, "GameClipsTable").table;
+		this.gameClipsTable = new GameClipsDdbTable(this, "GameClipsTable").table;
 
 		this.ec2Instance = new Ec2Instance(this, "MyInstance").instance;
 	}
