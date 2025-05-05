@@ -7,12 +7,13 @@ import { Ec2Instance } from "./constructs/ec2-instance";
 import { UploadsS3Bucket } from "./constructs/uploads-s3-bucket";
 import { GamesDdbTable } from "./constructs/games-ddb-table";
 import { GameClipsDdbTable } from "./constructs/game-clips-ddb-table";
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { PlayersDdbTable } from "./constructs/players-ddb-table";
 
 export class HoopArchivesBackendStack extends Stack {
 	readonly uploadsBucket: Bucket;
 	readonly gamesTable: Table;
 	readonly gameClipsTable: Table;
+	readonly playersTable: Table;
 	readonly ec2Instance: Instance;
 
 	constructor(scope: Construct, id: string, props?: StackProps) {
@@ -23,6 +24,8 @@ export class HoopArchivesBackendStack extends Stack {
 		this.gamesTable = new GamesDdbTable(this, "GamesTable").table;
 
 		this.gameClipsTable = new GameClipsDdbTable(this, "GameClipsTable").table;
+
+		this.playersTable = new PlayersDdbTable(this, "PlayersTable").table;
 
 		this.ec2Instance = new Ec2Instance(this, "MyInstance").instance;
 	}
