@@ -31,13 +31,7 @@ export class HoopArchivesBackendStack extends Stack {
 		this.playersTable.addGlobalSecondaryIndex({
 			indexName: "FirstNameIndex",
 			partitionKey: { name: "firstName", type: AttributeType.STRING },
-			projectionType: ProjectionType.ALL,
-		});
-
-		// gsi for player's last name
-		this.playersTable.addGlobalSecondaryIndex({
-			indexName: "LastNameIndex",
-			partitionKey: { name: "lastName", type: AttributeType.STRING },
+			sortKey: { name: "lastName", type: AttributeType.STRING },
 			projectionType: ProjectionType.ALL,
 		});
 
