@@ -1,5 +1,5 @@
 import { Stack, StackProps } from "aws-cdk-lib";
-import { Table } from "aws-cdk-lib/aws-dynamodb";
+import { AttributeType, ProjectionType, Table } from "aws-cdk-lib/aws-dynamodb";
 import { Instance } from "aws-cdk-lib/aws-ec2";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
@@ -26,6 +26,20 @@ export class HoopArchivesBackendStack extends Stack {
 		this.gameClipsTable = new GameClipsDdbTable(this, "GameClipsTable").table;
 
 		this.playersTable = new PlayersDdbTable(this, "PlayersTable").table;
+
+		// gsi for player's first name
+		this.playersTable.addGlobalSecondaryIndex({
+			indexName: "FirstNameIndex",
+			partitionKey: { name: "firstName", type: AttributeType.STRING },
+			projectionType: ProjectionType.ALL,
+		});
+
+		// gsi for player's last name
+		this.playersTable.addGlobalSecondaryIndex({
+			indexName: "LastNameIndex",
+			partitionKey: { name: "lastName", type: AttributeType.STRING },
+			projectionType: ProjectionType.ALL,
+		});
 
 		this.ec2Instance = new Ec2Instance(this, "MyInstance").instance;
 	}
