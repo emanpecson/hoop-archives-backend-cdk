@@ -8,9 +8,11 @@ import { UploadsS3Bucket } from "./constructs/uploads-s3-bucket";
 import { GamesDdbTable } from "./constructs/games-ddb-table";
 import { GameClipsDdbTable } from "./constructs/game-clips-ddb-table";
 import { PlayersDdbTable } from "./constructs/players-ddb-table";
+import { DraftsDdbTable } from "./constructs/drafts-ddb-table";
 
 export class HoopArchivesBackendStack extends Stack {
 	readonly uploadsBucket: Bucket;
+	readonly draftsTable: Table;
 	readonly gamesTable: Table;
 	readonly gameClipsTable: Table;
 	readonly playersTable: Table;
@@ -20,6 +22,8 @@ export class HoopArchivesBackendStack extends Stack {
 		super(scope, id, props);
 
 		this.uploadsBucket = new UploadsS3Bucket(this, "UplodsBucket").bucket;
+
+		this.draftsTable = new DraftsDdbTable(this, "DraftsTable").table;
 
 		this.gamesTable = new GamesDdbTable(this, "GamesTable").table;
 
