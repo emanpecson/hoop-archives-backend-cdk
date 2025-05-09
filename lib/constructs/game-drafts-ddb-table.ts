@@ -2,7 +2,7 @@ import { RemovalPolicy } from "aws-cdk-lib";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
 
-export class DraftsDdbTable extends Construct {
+export class GameDraftsDdbTable extends Construct {
 	readonly table: Table;
 
 	constructor(scope: Construct, id: string) {
@@ -11,9 +11,9 @@ export class DraftsDdbTable extends Construct {
 	}
 
 	private createTable(): Table {
-		return new Table(this, "DraftsTable", {
-			tableName: "Drafts",
-			partitionKey: { name: "filename", type: AttributeType.STRING },
+		return new Table(this, "GameDraftsTable", {
+			tableName: "GameDrafts",
+			partitionKey: { name: "title", type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.DESTROY,
 		});
