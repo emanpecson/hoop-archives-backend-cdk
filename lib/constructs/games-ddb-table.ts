@@ -14,6 +14,10 @@ export class GamesDdbTable extends Construct {
 		return new Table(this, "GamesTable", {
 			tableName: "Games",
 			partitionKey: {
+				name: "leagueId",
+				type: AttributeType.STRING,
+			},
+			sortKey: {
 				name: "title",
 				type: AttributeType.STRING,
 			},
