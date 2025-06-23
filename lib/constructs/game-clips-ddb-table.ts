@@ -14,7 +14,7 @@ export class GameClipsDdbTable extends Construct {
 		return new Table(this, "GameClipsTable", {
 			tableName: "GameClips",
 			partitionKey: {
-				name: "gameId",
+				name: "gameTitle",
 				type: AttributeType.STRING,
 			},
 			sortKey: {

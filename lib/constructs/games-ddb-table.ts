@@ -14,7 +14,7 @@ export class GamesDdbTable extends Construct {
 		return new Table(this, "GamesTable", {
 			tableName: "Games",
 			partitionKey: {
-				name: "gameId",
+				name: "title",
 				type: AttributeType.STRING,
 			},
 			billingMode: BillingMode.PAY_PER_REQUEST,
