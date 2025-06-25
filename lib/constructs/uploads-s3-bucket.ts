@@ -1,6 +1,7 @@
 import { BlockPublicAccess, Bucket, HttpMethods } from "aws-cdk-lib/aws-s3";
 import { RemovalPolicy } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { AnyPrincipal, Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
 export class UploadsS3Bucket extends Construct {
 	readonly bucket: Bucket;
@@ -11,10 +12,10 @@ export class UploadsS3Bucket extends Construct {
 	}
 
 	private createBucket(): Bucket {
-		return new Bucket(this, "UploadsBucket", {
+		const bucket = new Bucket(this, "UploadsBucket", {
 			bucketName: "hoop-archives-uploads",
 			versioned: false,
-			blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+			blockPublicAccess: BlockPublicAccess.BLOCK_ACLS,
 			removalPolicy: RemovalPolicy.DESTROY,
 			autoDeleteObjects: true,
 			cors: [
@@ -32,5 +33,17 @@ export class UploadsS3Bucket extends Construct {
 				},
 			],
 		});
+
+		// public GET access
+		bucket.addToResourcePolicy(
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				principals: [new AnyPrincipal()],
+				actions: ["s3:GetObject"],
+				resources: [`${bucket.bucketArn}/*`],
+			})
+		);
+
+		return bucket;
 	}
 }
