@@ -13,8 +13,8 @@ export class PlayersDdbTable extends Construct {
 	private createTable(): Table {
 		return new Table(this, "PlayersTable", {
 			tableName: "Players",
-			partitionKey: { name: "playerId", type: AttributeType.STRING },
-			sortKey: { name: "lastName", type: AttributeType.STRING },
+			partitionKey: { name: "leagueId", type: AttributeType.STRING },
+			sortKey: { name: "fullName", type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.DESTROY,
 		});

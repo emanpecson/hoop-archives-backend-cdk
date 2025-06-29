@@ -34,11 +34,10 @@ export class HoopArchivesBackendStack extends Stack {
 
 		this.playersTable = new PlayersDdbTable(this, "PlayersTable").table;
 
-		// gsi for player's first name
+		// gsi for player id
 		this.playersTable.addGlobalSecondaryIndex({
-			indexName: "FirstNameIndex",
-			partitionKey: { name: "firstName", type: AttributeType.STRING },
-			sortKey: { name: "lastName", type: AttributeType.STRING },
+			indexName: "PlayerIdIndex",
+			partitionKey: { name: "playerId", type: AttributeType.STRING },
 			projectionType: ProjectionType.ALL,
 		});
 
