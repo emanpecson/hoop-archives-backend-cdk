@@ -32,6 +32,14 @@ export class HoopArchivesBackendStack extends Stack {
 
 		this.gameClipsTable = new GameClipsDdbTable(this, "GameClipsTable").table;
 
+		// gsi for game title
+		this.gameClipsTable.addGlobalSecondaryIndex({
+			indexName: "GameTitleIndex",
+			partitionKey: { name: "leagueId", type: AttributeType.STRING },
+			sortKey: { name: "gameTitle", type: AttributeType.STRING },
+			projectionType: ProjectionType.ALL,
+		});
+
 		this.playersTable = new PlayersDdbTable(this, "PlayersTable").table;
 
 		// gsi for player id
