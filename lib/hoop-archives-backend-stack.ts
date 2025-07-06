@@ -3,7 +3,6 @@ import { AttributeType, ProjectionType, Table } from "aws-cdk-lib/aws-dynamodb";
 import { Instance } from "aws-cdk-lib/aws-ec2";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
-import { Ec2Instance } from "./constructs/ec2-instance";
 import { UploadsS3Bucket } from "./constructs/uploads-s3-bucket";
 import { GamesDdbTable } from "./constructs/games-ddb-table";
 import { GameClipsDdbTable } from "./constructs/game-clips-ddb-table";
@@ -18,7 +17,6 @@ export class HoopArchivesBackendStack extends Stack {
 	readonly gamesTable: Table;
 	readonly gameClipsTable: Table;
 	readonly playersTable: Table;
-	readonly ec2Instance: Instance;
 	readonly trimRequestQueue: Queue;
 
 	constructor(scope: Construct, id: string, props?: StackProps) {
@@ -51,8 +49,6 @@ export class HoopArchivesBackendStack extends Stack {
 			partitionKey: { name: "playerId", type: AttributeType.STRING },
 			projectionType: ProjectionType.ALL,
 		});
-
-		this.ec2Instance = new Ec2Instance(this, "MyInstance").instance;
 
 		this.trimRequestQueue = new TrimRequestSqsQueue(
 			this,
