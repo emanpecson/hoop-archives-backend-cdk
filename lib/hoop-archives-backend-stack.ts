@@ -9,6 +9,8 @@ import { GamesDdbTable } from "./constructs/games-ddb-table";
 import { GameClipsDdbTable } from "./constructs/game-clips-ddb-table";
 import { PlayersDdbTable } from "./constructs/players-ddb-table";
 import { GameDraftsDdbTable } from "./constructs/game-drafts-ddb-table";
+import { Queue } from "aws-cdk-lib/aws-sqs";
+import { TrimRequestSqsQueue } from "./constructs/trim-request-sqs-queue";
 
 export class HoopArchivesBackendStack extends Stack {
 	readonly uploadsBucket: Bucket;
@@ -17,6 +19,7 @@ export class HoopArchivesBackendStack extends Stack {
 	readonly gameClipsTable: Table;
 	readonly playersTable: Table;
 	readonly ec2Instance: Instance;
+	readonly trimRequestQueue: Queue;
 
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
@@ -50,5 +53,10 @@ export class HoopArchivesBackendStack extends Stack {
 		});
 
 		this.ec2Instance = new Ec2Instance(this, "MyInstance").instance;
+
+		this.trimRequestQueue = new TrimRequestSqsQueue(
+			this,
+			"TrimRequestQueue"
+		).queue;
 	}
 }
