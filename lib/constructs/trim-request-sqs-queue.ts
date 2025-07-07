@@ -1,20 +1,23 @@
 import { Construct } from "constructs";
 import { Duration } from "aws-cdk-lib";
-import * as sqs from "aws-cdk-lib/aws-sqs";
+import { Queue } from "aws-cdk-lib/aws-sqs";
 
 export class TrimRequestSqsQueue extends Construct {
-	public readonly queue: sqs.Queue;
+	readonly queue: Queue;
 
 	constructor(scope: Construct, id: string) {
 		super(scope, id);
+		this.queue = this.createQueue();
+	}
 
+	private createQueue(): Queue {
 		// * throw failed messages in DLQ to prevent main queue overload
-		let deadLetterQueue: sqs.Queue | undefined;
-		deadLetterQueue = new sqs.Queue(this, "DeadLetterQueue", {
+		let deadLetterQueue: Queue | undefined;
+		deadLetterQueue = new Queue(this, "DeadLetterQueue", {
 			queueName: "TrimRequestDLQ",
 		});
 
-		this.queue = new sqs.Queue(this, "MainQueue", {
+		return new Queue(this, "MainQueue", {
 			queueName: "TrimRequestQueue",
 			visibilityTimeout: Duration.seconds(300),
 			retentionPeriod: Duration.days(4),
