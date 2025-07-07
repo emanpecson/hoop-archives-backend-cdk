@@ -8,7 +8,7 @@ import { GameClipsDdbTable } from "./constructs/game-clips-ddb-table";
 import { PlayersDdbTable } from "./constructs/players-ddb-table";
 import { GameDraftsDdbTable } from "./constructs/game-drafts-ddb-table";
 import { Queue } from "aws-cdk-lib/aws-sqs";
-import { TrimRequestSqsQueue } from "./constructs/trim-request-sqs-queue";
+import { UploadRequestSqsQueue } from "./constructs/upload-request-sqs-queue";
 import { Function } from "aws-cdk-lib/aws-lambda";
 import { ClipperLambda } from "./constructs/clipper-lambda";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
@@ -19,7 +19,7 @@ export class HoopArchivesBackendStack extends Stack {
 	readonly gamesTable: Table;
 	readonly gameClipsTable: Table;
 	readonly playersTable: Table;
-	readonly trimRequestQueue: Queue;
+	readonly uploadRequestQueue: Queue;
 	readonly lambdaFunction: Function;
 
 	constructor(scope: Construct, id: string, props?: StackProps) {
@@ -53,15 +53,15 @@ export class HoopArchivesBackendStack extends Stack {
 			projectionType: ProjectionType.ALL,
 		});
 
-		this.trimRequestQueue = new TrimRequestSqsQueue(
+		this.uploadRequestQueue = new UploadRequestSqsQueue(
 			this,
-			"TrimRequestQueue"
+			"UploadRequestQueue"
 		).queue;
 
 		this.lambdaFunction = new ClipperLambda(this, "ClipperLambda").function;
 		this.lambdaFunction.addEventSource(
-			// 1 set of trim-requests per lambda invocation
-			new SqsEventSource(this.trimRequestQueue, { batchSize: 1 })
+			// 1 upload-request per lambda invocation
+			new SqsEventSource(this.uploadRequestQueue, { batchSize: 1 })
 		);
 	}
 }
