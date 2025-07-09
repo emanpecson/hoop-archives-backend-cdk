@@ -67,6 +67,11 @@ export class HoopArchivesBackendStack extends Stack {
 			new SqsEventSource(this.uploadRequestQueue, { batchSize: 1 })
 		);
 
+		// grant lambda access to resources
+		this.gamesTable.grantReadWriteData(this.lambdaFunction);
+		this.gameClipsTable.grantWriteData(this.lambdaFunction);
+		this.uploadsBucket.grantReadWrite(this.lambdaFunction);
+
 		// create "allow sqs message policy"
 		const user = User.fromUserName(this, this.awsUsername, "hoop-archives-dev");
 		const policy = new Policy(this, "AllowSendMessageToQueue", {
