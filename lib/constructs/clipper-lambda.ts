@@ -26,7 +26,11 @@ export class ClipperLambda extends Construct {
 			memorySize: 3008, // max on java runtimes
 			timeout: Duration.minutes(5),
 			ephemeralStorageSize: Size.gibibytes(6), // `/tmp` space
-			environment: { AWS_S3_BUCKET_NAME: "hoop-archives-uploads" },
+			environment: {
+				AWS_S3_BUCKET_NAME: "hoop-archives-uploads",
+				AWS_DDB_GAMES_TABLE: "Games",
+				AWS_DDB_GAME_CLIPS_TABLE: "GameClips",
+			},
 		});
 	}
 }
