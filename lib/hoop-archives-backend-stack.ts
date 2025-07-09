@@ -12,6 +12,7 @@ import { UploadRequestSqsQueue } from "./constructs/upload-request-sqs-queue";
 import { Function } from "aws-cdk-lib/aws-lambda";
 import { ClipperLambda } from "./constructs/clipper-lambda";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { Effect, User, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 
 export class HoopArchivesBackendStack extends Stack {
 	readonly uploadsBucket: Bucket;
@@ -21,6 +22,8 @@ export class HoopArchivesBackendStack extends Stack {
 	readonly playersTable: Table;
 	readonly uploadRequestQueue: Queue;
 	readonly lambdaFunction: Function;
+
+	private awsUsername = "emanpecson";
 
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
@@ -63,5 +66,18 @@ export class HoopArchivesBackendStack extends Stack {
 			// 1 upload-request per lambda invocation
 			new SqsEventSource(this.uploadRequestQueue, { batchSize: 1 })
 		);
+
+		// create "allow sqs message policy"
+		const user = User.fromUserName(this, this.awsUsername, "hoop-archives-dev");
+		const policy = new Policy(this, "AllowSendMessageToQueue", {
+			statements: [
+				new PolicyStatement({
+					effect: Effect.ALLOW,
+					actions: ["sqs:SendMessage"],
+					resources: [this.uploadRequestQueue.queueArn],
+				}),
+			],
+		});
+		policy.attachToUser(user); // attach policy to user
 	}
 }
