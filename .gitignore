@@ -8,3 +8,9 @@ node_modules
 cdk.out
 
 *.jar
+
+# lambda layers
+lib/layer/bin/ffmpeg
+*.zip
+
+.DS_Store

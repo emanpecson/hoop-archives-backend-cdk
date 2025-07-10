@@ -1,5 +1,5 @@
 import * as path from "path";
-import { Function, Runtime, Code } from "aws-cdk-lib/aws-lambda";
+import { Function, Runtime, Code, LayerVersion } from "aws-cdk-lib/aws-lambda";
 import { Duration, Size } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
@@ -19,6 +19,8 @@ export class ClipperLambda extends Construct {
 			"clipper-lambda.jar"
 		);
 
+		const ffmpegPath = path.join(__dirname, "..", "ffmpeg-layer.zip");
+
 		return new Function(this, "ClipperLambda", {
 			runtime: Runtime.JAVA_17,
 			handler: "com.hooparchives.Clipper::handleRequest",
@@ -30,7 +32,14 @@ export class ClipperLambda extends Construct {
 				AWS_S3_BUCKET_NAME: "hoop-archives-uploads",
 				AWS_DDB_GAMES_TABLE: "Games",
 				AWS_DDB_GAME_CLIPS_TABLE: "GameClips",
+				FFMPEG_PATH: "/opt/bin/ffmpeg",
 			},
+			layers: [
+				new LayerVersion(this, "FFmpegLayer", {
+					code: Code.fromAsset(ffmpegPath),
+					compatibleRuntimes: [Runtime.JAVA_17],
+				}),
+			],
 		});
 	}
 }
