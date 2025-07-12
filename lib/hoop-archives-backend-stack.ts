@@ -1,5 +1,5 @@
 import { Stack, StackProps } from "aws-cdk-lib";
-import { AttributeType, ProjectionType, Table } from "aws-cdk-lib/aws-dynamodb";
+import { Table } from "aws-cdk-lib/aws-dynamodb";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { UploadsS3Bucket } from "./constructs/uploads-s3-bucket";
@@ -39,22 +39,7 @@ export class HoopArchivesBackendStack extends Stack {
 
 		this.gameClipsTable = new GameClipsDdbTable(this, "GameClipsTable").table;
 
-		// gsi for game title
-		this.gameClipsTable.addGlobalSecondaryIndex({
-			indexName: "GameTitleIndex",
-			partitionKey: { name: "leagueId", type: AttributeType.STRING },
-			sortKey: { name: "gameTitle", type: AttributeType.STRING },
-			projectionType: ProjectionType.ALL,
-		});
-
 		this.playersTable = new PlayersDdbTable(this, "PlayersTable").table;
-
-		// gsi for player id
-		this.playersTable.addGlobalSecondaryIndex({
-			indexName: "PlayerIdIndex",
-			partitionKey: { name: "playerId", type: AttributeType.STRING },
-			projectionType: ProjectionType.ALL,
-		});
 
 		this.uploadRequestQueue = new UploadRequestSqsQueue(
 			this,

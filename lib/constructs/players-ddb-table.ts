@@ -1,5 +1,10 @@
 import { RemovalPolicy } from "aws-cdk-lib";
-import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
+import {
+	AttributeType,
+	BillingMode,
+	ProjectionType,
+	Table,
+} from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
 
 export class PlayersDdbTable extends Construct {
@@ -11,12 +16,22 @@ export class PlayersDdbTable extends Construct {
 	}
 
 	private createTable(): Table {
-		return new Table(this, "PlayersTable", {
+		const table = new Table(this, "PlayersTable", {
 			tableName: "Players",
 			partitionKey: { name: "leagueId", type: AttributeType.STRING },
-			sortKey: { name: "fullName", type: AttributeType.STRING },
+			sortKey: { name: "playerId", type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.DESTROY,
 		});
+
+		// gsi for fullName
+		table.addGlobalSecondaryIndex({
+			indexName: "GSI_fullName",
+			partitionKey: { name: "leagueId", type: AttributeType.STRING },
+			sortKey: { name: "fullName", type: AttributeType.STRING },
+			projectionType: ProjectionType.ALL,
+		});
+
+		return table;
 	}
 }
