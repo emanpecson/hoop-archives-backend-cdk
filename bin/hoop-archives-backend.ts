@@ -16,7 +16,7 @@ new HoopArchivesBackendStack(app, "HoopArchivesBackendStack", {
 	 * want to deploy the stack to. */
 	// env: { account: '123456789012', region: 'us-east-1' },
 
-	env: { account: "594774848305", region: "us-west-2" },
+	env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
 
 	/* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
