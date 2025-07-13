@@ -13,6 +13,7 @@ import { Function } from "aws-cdk-lib/aws-lambda";
 import { ClipperLambda } from "./constructs/clipper-lambda";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Effect, User, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { StatsDdbTable } from "./constructs/stats-ddb-table";
 
 export class HoopArchivesBackendStack extends Stack {
 	readonly uploadsBucket: Bucket;
@@ -20,6 +21,7 @@ export class HoopArchivesBackendStack extends Stack {
 	readonly gamesTable: Table;
 	readonly clipsTable: Table;
 	readonly playersTable: Table;
+	readonly statsTable: Table;
 	readonly uploadRequestQueue: Queue;
 	readonly lambdaFunction: Function;
 
@@ -34,6 +36,7 @@ export class HoopArchivesBackendStack extends Stack {
 		this.gamesTable = new GamesDdbTable(this, "GamesTable").table;
 		this.clipsTable = new GameClipsDdbTable(this, "ClipsTable").table;
 		this.playersTable = new PlayersDdbTable(this, "PlayersTable").table;
+		this.statsTable = new StatsDdbTable(this, "StatsTable").table;
 
 		this.uploadRequestQueue = new UploadRequestSqsQueue(
 			this,
