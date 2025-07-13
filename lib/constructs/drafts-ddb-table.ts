@@ -7,7 +7,7 @@ import {
 } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
 
-export class GameClipsDdbTable extends Construct {
+export class GameDraftsDdbTable extends Construct {
 	readonly table: Table;
 
 	constructor(scope: Construct, id: string) {
@@ -16,24 +16,18 @@ export class GameClipsDdbTable extends Construct {
 	}
 
 	private createTable(): Table {
-		const table = new Table(this, "GameClipsTable", {
-			tableName: "GameClips",
-			partitionKey: {
-				name: "leagueId",
-				type: AttributeType.STRING,
-			},
-			sortKey: {
-				name: "clipId",
-				type: AttributeType.STRING,
-			},
+		const table = new Table(this, "DraftsTable", {
+			tableName: "Drafts",
+			partitionKey: { name: "leagueId", type: AttributeType.STRING },
+			sortKey: { name: "draftId", type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.DESTROY,
 		});
 
 		table.addGlobalSecondaryIndex({
-			indexName: "GameTitleIndex",
+			indexName: "GSI_title",
 			partitionKey: { name: "leagueId", type: AttributeType.STRING },
-			sortKey: { name: "gameTitle", type: AttributeType.STRING },
+			sortKey: { name: "title", type: AttributeType.STRING },
 			projectionType: ProjectionType.ALL,
 		});
 

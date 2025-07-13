@@ -29,10 +29,10 @@ export class ClipperLambda extends Construct {
 			timeout: Duration.minutes(5),
 			ephemeralStorageSize: Size.gibibytes(6), // `/tmp` space
 			environment: {
-				AWS_S3_BUCKET_NAME: "hoop-archives-uploads",
-				AWS_DDB_GAMES_TABLE: "Games",
-				AWS_DDB_GAME_CLIPS_TABLE: "GameClips",
-				FFMPEG_PATH: "/opt/bin/ffmpeg",
+				AWS_S3_BUCKET_NAME: String(process.env.AWS_S3_BUCKET_NAME),
+				AWS_DDB_GAMES_TABLE: String(process.env.AWS_DDB_GAMES_TABLE),
+				AWS_DDB_CLIPS_TABLE: String(process.env.AWS_DDB_CLIPS_TABLE),
+				FFMPEG_PATH: String(process.env.FFMPEG_PATH),
 			},
 			layers: [
 				new LayerVersion(this, "FFmpegLayer", {
