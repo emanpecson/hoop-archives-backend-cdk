@@ -31,9 +31,9 @@ export class GameClipsDdbTable extends Construct {
 		});
 
 		table.addGlobalSecondaryIndex({
-			indexName: "GSI_gameTitle",
+			indexName: "GSI_gameId",
 			partitionKey: { name: "leagueId", type: AttributeType.STRING },
-			sortKey: { name: "gameTitle", type: AttributeType.STRING },
+			sortKey: { name: "gameId", type: AttributeType.STRING },
 			projectionType: ProjectionType.ALL,
 		});
 
