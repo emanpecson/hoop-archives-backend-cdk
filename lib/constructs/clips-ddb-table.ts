@@ -7,7 +7,7 @@ import {
 } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
 
-export class GameClipsDdbTable extends Construct {
+export class ClipsDdbTable extends Construct {
 	readonly table: Table;
 
 	constructor(scope: Construct, id: string) {

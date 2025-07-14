@@ -4,9 +4,9 @@ import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import { UploadsS3Bucket } from "./constructs/uploads-s3-bucket";
 import { GamesDdbTable } from "./constructs/games-ddb-table";
-import { GameClipsDdbTable } from "./constructs/clips-ddb-table";
+import { ClipsDdbTable } from "./constructs/clips-ddb-table";
 import { PlayersDdbTable } from "./constructs/players-ddb-table";
-import { GameDraftsDdbTable } from "./constructs/drafts-ddb-table";
+import { DraftsDdbTable } from "./constructs/drafts-ddb-table";
 import { Queue } from "aws-cdk-lib/aws-sqs";
 import { UploadRequestSqsQueue } from "./constructs/upload-request-sqs-queue";
 import { Function } from "aws-cdk-lib/aws-lambda";
@@ -32,9 +32,9 @@ export class HoopArchivesBackendStack extends Stack {
 
 		this.uploadsBucket = new UploadsS3Bucket(this, "UplodsBucket").bucket;
 
-		this.draftsTable = new GameDraftsDdbTable(this, "DraftsTable").table;
+		this.draftsTable = new DraftsDdbTable(this, "DraftsTable").table;
 		this.gamesTable = new GamesDdbTable(this, "GamesTable").table;
-		this.clipsTable = new GameClipsDdbTable(this, "ClipsTable").table;
+		this.clipsTable = new ClipsDdbTable(this, "ClipsTable").table;
 		this.playersTable = new PlayersDdbTable(this, "PlayersTable").table;
 		this.statsTable = new StatsDdbTable(this, "StatsTable").table;
 
