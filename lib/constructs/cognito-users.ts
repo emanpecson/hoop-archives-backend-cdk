@@ -1,5 +1,6 @@
 import { RemovalPolicy, SecretValue } from "aws-cdk-lib";
 import {
+	OAuthScope,
 	ProviderAttribute,
 	UserPool,
 	UserPoolClient,
@@ -80,7 +81,7 @@ export class CognitoUsers extends Construct {
 	): UserPoolClient {
 		const poolPartyClient = this.userPool.addClient("UserPoolClient", {
 			userPoolClientName: "HoopArchivesUserPoolClient",
-			generateSecret: false,
+			generateSecret: true,
 			oAuth: {
 				callbackUrls: [
 					process.env.DEV_CALLBACK_URL!,
@@ -90,6 +91,10 @@ export class CognitoUsers extends Construct {
 					process.env.DEV_LOGOUT_URL!,
 					// process.env.PROD_LOGOUT_URL!,
 				],
+				scopes: [OAuthScope.OPENID, OAuthScope.EMAIL, OAuthScope.PROFILE],
+			},
+			authFlows: {
+				userSrp: true, // enable cognito user pool auth
 			},
 			supportedIdentityProviders: [
 				UserPoolClientIdentityProvider.COGNITO,
