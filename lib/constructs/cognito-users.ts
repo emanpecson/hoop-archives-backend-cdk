@@ -1,5 +1,7 @@
 import { RemovalPolicy, SecretValue } from "aws-cdk-lib";
 import {
+	CfnIdentityPool,
+	CfnIdentityPoolRoleAttachment,
 	OAuthScope,
 	ProviderAttribute,
 	UserPool,
@@ -7,13 +9,7 @@ import {
 	UserPoolClientIdentityProvider,
 	UserPoolIdentityProviderGoogle,
 } from "aws-cdk-lib/aws-cognito";
-import {
-	IdentityPool,
-	IdentityPoolProviderType,
-	IdentityPoolProviderUrl,
-	RoleMappingMatchType,
-	UserPoolAuthenticationProvider,
-} from "aws-cdk-lib/aws-cognito-identitypool";
+import { RoleMappingMatchType } from "aws-cdk-lib/aws-cognito-identitypool";
 import { FederatedPrincipal, ManagedPolicy, Role } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
@@ -21,7 +17,7 @@ export class CognitoUsers extends Construct {
 	readonly userPool: UserPool;
 	readonly googleProvider: UserPoolIdentityProviderGoogle;
 	readonly userPoolClient: UserPoolClient;
-	readonly identityPool: IdentityPool;
+	readonly identityPool: CfnIdentityPool;
 
 	readonly betaUserRole: Role;
 	readonly userRole: Role;
@@ -34,24 +30,18 @@ export class CognitoUsers extends Construct {
 
 		this.addGroups(this.userPool);
 
-		const federatedPrincipal = new FederatedPrincipal(
-			"cognito-identity.amazonaws.com",
-			{
-				StringEquals: {
-					"cognito-identity.amazonaws.com:aud": "*", // this.identityPool.identityPoolId,
-				},
-				"ForAnyValue:StringLike": {
-					"cognito-identity.amazonaws.com:amr": "authenticated",
-				},
-			},
-			"sts:AssumeRoleWithWebIdentity"
-		);
+		// start creation of identity pool
+		this.identityPool = this.createIdentityPool();
 
-		// define app roles
-		this.betaUserRole = this.createBetaUserRole(federatedPrincipal);
-		this.userRole = this.createUserRole(federatedPrincipal);
+		// create roles in reference to the identity pool id
+		this.betaUserRole = this.createBetaUserRole(this.identityPool.ref);
+		this.userRole = this.createUserRole(this.identityPool.ref);
 
-		this.identityPool = this.createIdentityPool(
+		// attach roles to identity pool
+		const providerUrl = `${this.userPool.userPoolProviderName}:${this.userPoolClient.userPoolClientId}`;
+		this.identityPoolAttachRoles(
+			providerUrl,
+			this.identityPool.ref,
 			this.betaUserRole,
 			this.userRole
 		);
@@ -128,50 +118,24 @@ export class CognitoUsers extends Construct {
 		});
 	}
 
-	private createIdentityPool(betaUserRole: Role, userRole: Role): IdentityPool {
-		const providerUrl = `${this.userPool.userPoolProviderName}:${this.userPoolClient.userPoolClientId}`;
-
-		return new IdentityPool(this, "IdentityPool", {
+	// L1 setup: no automatic role creation
+	private createIdentityPool(): CfnIdentityPool {
+		return new CfnIdentityPool(this, "IdentityPool", {
 			identityPoolName: "HoopArchivesIdentityPool",
-			authenticationProviders: {
-				userPools: [
-					new UserPoolAuthenticationProvider({
-						userPool: this.userPool,
-						userPoolClient: this.userPoolClient,
-					}),
-				],
-				google: {
-					clientId: process.env.GOOGLE_AUTH_CLIENT_ID!,
-				},
-			},
-			// default role on authentication
-			authenticatedRole: betaUserRole,
+			allowUnauthenticatedIdentities: false,
 
-			// conditionally apply role for users authenticated via the app's User Pool
-			roleMappings: [
+			// maps cognito user pool + client
+			cognitoIdentityProviders: [
 				{
-					mappingKey: "cognito-mapping",
-					providerUrl: new IdentityPoolProviderUrl(
-						IdentityPoolProviderType.USER_POOL,
-						providerUrl
-					),
-					resolveAmbiguousRoles: true,
-					rules: [
-						{
-							claim: "cognito:groups",
-							matchType: RoleMappingMatchType.CONTAINS,
-							claimValue: "BetaUser",
-							mappedRole: betaUserRole,
-						},
-						{
-							claim: "cognito:groups",
-							matchType: RoleMappingMatchType.CONTAINS,
-							claimValue: "User",
-							mappedRole: userRole,
-						},
-					],
+					clientId: this.userPoolClient.userPoolClientId,
+					providerName: this.userPool.userPoolProviderName,
 				},
 			],
+
+			// map external identity provider (google)
+			supportedLoginProviders: {
+				"accounts.google.com": process.env.GOOGLE_AUTH_CLIENT_ID,
+			},
 		});
 	}
 
@@ -180,12 +144,25 @@ export class CognitoUsers extends Construct {
 		userPool.addGroup("UserGroup", { groupName: "User" });
 	}
 
-	private createBetaUserRole(federatedPrincipal: FederatedPrincipal): Role {
-		// beta user role
+	private createBetaUserRole(identityPoolId: string): Role {
+		const federatedPrincipal = new FederatedPrincipal(
+			"cognito-identity.amazonaws.com",
+			{
+				StringEquals: {
+					"cognito-identity.amazonaws.com:aud": identityPoolId,
+				},
+				"ForAnyValue:StringLike": {
+					"cognito-identity.amazonaws.com:amr": "authenticated",
+				},
+			},
+			"sts:AssumeRoleWithWebIdentity"
+		);
+
 		const role = new Role(this, "BetaUserRole", {
 			assumedBy: federatedPrincipal,
 			description: "Limited AWS permissions for beta testers",
 		});
+
 		role.addManagedPolicy(
 			ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")
 		);
@@ -193,16 +170,67 @@ export class CognitoUsers extends Construct {
 		return role;
 	}
 
-	private createUserRole(federatedPrincipal: FederatedPrincipal): Role {
-		// user role
+	private createUserRole(identityPoolId: string): Role {
+		const federatedPrincipal = new FederatedPrincipal(
+			"cognito-identity.amazonaws.com",
+			{
+				StringEquals: {
+					"cognito-identity.amazonaws.com:aud": identityPoolId,
+				},
+				"ForAnyValue:StringLike": {
+					"cognito-identity.amazonaws.com:amr": "authenticated",
+				},
+			},
+			"sts:AssumeRoleWithWebIdentity"
+		);
+
 		const role = new Role(this, "UserRole", {
 			assumedBy: federatedPrincipal,
 			description: "Permissions for regular users",
 		});
+
 		role.addManagedPolicy(
 			ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess")
 		);
 
 		return role;
+	}
+
+	private identityPoolAttachRoles(
+		providerUrl: string,
+		identityPoolId: string,
+		betaUserRole: Role,
+		userRole: Role
+	): CfnIdentityPoolRoleAttachment {
+		return new CfnIdentityPoolRoleAttachment(this, "RoleAttachment", {
+			identityPoolId: identityPoolId,
+			roles: {
+				authenticated: betaUserRole.roleArn,
+				unauthenticated: betaUserRole.roleArn,
+			},
+			roleMappings: {
+				"cognito-mapping": {
+					type: "Rules",
+					ambiguousRoleResolution: "AuthenticatedRole",
+					identityProvider: providerUrl,
+					rulesConfiguration: {
+						rules: [
+							{
+								claim: "cognito:groups",
+								matchType: RoleMappingMatchType.CONTAINS,
+								value: "BetaUser",
+								roleArn: betaUserRole.roleArn,
+							},
+							{
+								claim: "cognito:groups",
+								matchType: RoleMappingMatchType.CONTAINS,
+								value: "User",
+								roleArn: userRole.roleArn,
+							},
+						],
+					},
+				},
+			},
+		});
 	}
 }
