@@ -85,8 +85,6 @@ export class CognitoUsers extends Construct {
 		betaUserRole: Role,
 		userRole: Role
 	): IdentityPool {
-		const region = Stack.of(this).region;
-		// const providerUrl = `cognito-idp.${region}.amazonaws.com/${this.userPool.userPoolId}`;
 		const providerUrl = `${this.userPool.userPoolProviderName}:${this.userPoolClient.userPoolClientId}`;
 		const mappingKey = `${userPoolId}:${userPoolClientId}`;
 

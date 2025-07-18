@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib";
+import * as dotenv from "dotenv";
 import { HoopArchivesBackendStack } from "../lib/hoop-archives-backend-stack";
+
+dotenv.config();
 
 const app = new cdk.App();
 new HoopArchivesBackendStack(app, "HoopArchivesBackendStack", {
