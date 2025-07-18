@@ -1,5 +1,11 @@
-import { CfnJson, RemovalPolicy, Stack } from "aws-cdk-lib";
-import { UserPool, UserPoolClient } from "aws-cdk-lib/aws-cognito";
+import { RemovalPolicy, SecretValue } from "aws-cdk-lib";
+import {
+	ProviderAttribute,
+	UserPool,
+	UserPoolClient,
+	UserPoolClientIdentityProvider,
+	UserPoolIdentityProviderGoogle,
+} from "aws-cdk-lib/aws-cognito";
 import {
 	IdentityPool,
 	IdentityPoolProviderType,
@@ -12,6 +18,7 @@ import { Construct } from "constructs";
 
 export class CognitoUsers extends Construct {
 	readonly userPool: UserPool;
+	readonly googleProvider: UserPoolIdentityProviderGoogle;
 	readonly userPoolClient: UserPoolClient;
 	readonly identityPool: IdentityPool;
 
@@ -20,11 +27,9 @@ export class CognitoUsers extends Construct {
 
 	constructor(scope: Construct, id: string) {
 		super(scope, id);
-		const userPoolId = "UserPool";
-		const userPoolClientId = "UserPoolClient";
-
-		this.userPool = this.createUserPool(userPoolId);
-		this.userPoolClient = this.addUserPoolClient(userPoolClientId);
+		this.userPool = this.createUserPool();
+		this.googleProvider = this.addUserPoolGoogleProvider(this.userPool);
+		this.userPoolClient = this.addUserPoolClient(this.googleProvider);
 
 		this.addGroups(this.userPool);
 
@@ -46,15 +51,13 @@ export class CognitoUsers extends Construct {
 		this.userRole = this.createUserRole(federatedPrincipal);
 
 		this.identityPool = this.createIdentityPool(
-			userPoolId,
-			userPoolClientId,
 			this.betaUserRole,
 			this.userRole
 		);
 	}
 
-	private createUserPool(id: string): UserPool {
-		const poolParty = new UserPool(this, id, {
+	private createUserPool(): UserPool {
+		const poolParty = new UserPool(this, "UserPool", {
 			userPoolName: "HoopArchivesUserPool",
 			selfSignUpEnabled: true, // allow public access
 			signInAliases: { email: true },
@@ -72,31 +75,56 @@ export class CognitoUsers extends Construct {
 		return poolParty;
 	}
 
-	private addUserPoolClient(id: string): UserPoolClient {
-		return this.userPool.addClient(id, {
+	private addUserPoolClient(
+		googleProvider: UserPoolIdentityProviderGoogle
+	): UserPoolClient {
+		const poolPartyClient = this.userPool.addClient("UserPoolClient", {
 			userPoolClientName: "HoopArchivesUserPoolClient",
 			generateSecret: false,
 			oAuth: {
 				callbackUrls: [
-					String(process.env.DEV_CALLBACK_URL),
-					// String(process.env.PROD_CALLBACK_URL),
+					process.env.DEV_CALLBACK_URL!,
+					// process.env.PROD_CALLBACK_URL!,
 				],
 				logoutUrls: [
-					String(process.env.DEV_LOGOUT_URL),
-					// String(process.env.PROD_LOGOUT_URL),
+					process.env.DEV_LOGOUT_URL!,
+					// process.env.PROD_LOGOUT_URL!,
 				],
+			},
+			supportedIdentityProviders: [
+				UserPoolClientIdentityProvider.COGNITO,
+				UserPoolClientIdentityProvider.GOOGLE,
+			],
+		});
+
+		poolPartyClient.node.addDependency(googleProvider);
+
+		return poolPartyClient;
+	}
+
+	private addUserPoolGoogleProvider(
+		userPool: UserPool
+	): UserPoolIdentityProviderGoogle {
+		const googleClientSecret = SecretValue.secretsManager(
+			process.env.GOOGLE_AUTH_CLIENT_SECRET_PATH!
+		);
+
+		return new UserPoolIdentityProviderGoogle(this, "GoogleIdP", {
+			clientId: process.env.GOOGLE_AUTH_CLIENT_ID!,
+			clientSecretValue: googleClientSecret,
+			scopes: ["openid", "email", "profile"],
+			userPool: userPool,
+			attributeMapping: {
+				profilePicture: ProviderAttribute.GOOGLE_PICTURE,
+				email: ProviderAttribute.GOOGLE_EMAIL,
+				givenName: ProviderAttribute.GOOGLE_GIVEN_NAME,
+				familyName: ProviderAttribute.GOOGLE_FAMILY_NAME,
 			},
 		});
 	}
 
-	private createIdentityPool(
-		userPoolId: string,
-		userPoolClientId: string,
-		betaUserRole: Role,
-		userRole: Role
-	): IdentityPool {
+	private createIdentityPool(betaUserRole: Role, userRole: Role): IdentityPool {
 		const providerUrl = `${this.userPool.userPoolProviderName}:${this.userPoolClient.userPoolClientId}`;
-		const mappingKey = `${userPoolId}:${userPoolClientId}`;
 
 		return new IdentityPool(this, "IdentityPool", {
 			identityPoolName: "HoopArchivesIdentityPool",
@@ -108,7 +136,7 @@ export class CognitoUsers extends Construct {
 					}),
 				],
 				google: {
-					clientId: String(process.env.GOOGLE_AUTH_CLIENT_ID),
+					clientId: process.env.GOOGLE_AUTH_CLIENT_ID!,
 				},
 			},
 			// default role on authentication
@@ -117,7 +145,7 @@ export class CognitoUsers extends Construct {
 			// conditionally apply role for users authenticated via the app's User Pool
 			roleMappings: [
 				{
-					mappingKey,
+					mappingKey: "cognito-mapping",
 					providerUrl: new IdentityPoolProviderUrl(
 						IdentityPoolProviderType.USER_POOL,
 						providerUrl
