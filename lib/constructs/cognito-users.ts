@@ -54,12 +54,22 @@ export class CognitoUsers extends Construct {
 	}
 
 	private createUserPool(id: string): UserPool {
-		return new UserPool(this, id, {
+		const poolParty = new UserPool(this, id, {
 			userPoolName: "HoopArchivesUserPool",
 			selfSignUpEnabled: true, // allow public access
 			signInAliases: { email: true },
 			removalPolicy: RemovalPolicy.DESTROY,
 		});
+
+		// configure a domain through cognito
+		poolParty.addDomain("UserPoolDomain", {
+			cognitoDomain: {
+				// https://hoop-archives-auth.auth.us-west-2.amazoncognito.com
+				domainPrefix: "hoop-archives-auth",
+			},
+		});
+
+		return poolParty;
 	}
 
 	private addUserPoolClient(id: string): UserPoolClient {
@@ -90,7 +100,7 @@ export class CognitoUsers extends Construct {
 					}),
 				],
 				google: {
-					clientId: "",
+					clientId: String(process.env.GOOGLE_AUTH_CLIENT_ID),
 				},
 			},
 			authenticatedRole: betaUserRole,
