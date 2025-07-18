@@ -76,6 +76,16 @@ export class CognitoUsers extends Construct {
 		return this.userPool.addClient(id, {
 			userPoolClientName: "HoopArchivesUserPoolClient",
 			generateSecret: false,
+			oAuth: {
+				callbackUrls: [
+					String(process.env.DEV_CALLBACK_URL),
+					// String(process.env.PROD_CALLBACK_URL),
+				],
+				logoutUrls: [
+					String(process.env.DEV_LOGOUT_URL),
+					// String(process.env.PROD_LOGOUT_URL),
+				],
+			},
 		});
 	}
 
@@ -101,8 +111,10 @@ export class CognitoUsers extends Construct {
 					clientId: String(process.env.GOOGLE_AUTH_CLIENT_ID),
 				},
 			},
+			// default role on authentication
 			authenticatedRole: betaUserRole,
-			// unauthenticatedRole: betaUserRole,
+
+			// conditionally apply role for users authenticated via the app's User Pool
 			roleMappings: [
 				{
 					mappingKey,
