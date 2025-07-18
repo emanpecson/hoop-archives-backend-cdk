@@ -161,11 +161,11 @@ export class CognitoUsers extends Construct {
 		const role = new Role(this, "BetaUserRole", {
 			assumedBy: federatedPrincipal,
 			description: "Limited AWS permissions for beta testers",
+			managedPolicies: [
+				ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess"),
+				ManagedPolicy.fromAwsManagedPolicyName("AmazonDynamoDBReadOnlyAccess"),
+			],
 		});
-
-		role.addManagedPolicy(
-			ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess")
-		);
 
 		return role;
 	}
@@ -187,11 +187,11 @@ export class CognitoUsers extends Construct {
 		const role = new Role(this, "UserRole", {
 			assumedBy: federatedPrincipal,
 			description: "Permissions for regular users",
+			managedPolicies: [
+				ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"),
+				ManagedPolicy.fromAwsManagedPolicyName("AmazonDynamoDBFullAccess"),
+			],
 		});
-
-		role.addManagedPolicy(
-			ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess")
-		);
 
 		return role;
 	}
