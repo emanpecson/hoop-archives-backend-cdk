@@ -14,8 +14,10 @@ import { ClipperLambda } from "./constructs/clipper-lambda";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Effect, User, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { StatsDdbTable } from "./constructs/stats-ddb-table";
+import { CognitoUsers } from "./constructs/cognito-users";
 
 export class HoopArchivesBackendStack extends Stack {
+	readonly cognitoUsers: CognitoUsers;
 	readonly uploadsBucket: Bucket;
 	readonly draftsTable: Table;
 	readonly gamesTable: Table;
@@ -30,6 +32,7 @@ export class HoopArchivesBackendStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
 		super(scope, id, props);
 
+		this.cognitoUsers = new CognitoUsers(this, "CognitoUsers");
 		this.uploadsBucket = new UploadsS3Bucket(this, "UplodsBucket").bucket;
 
 		this.draftsTable = new DraftsDdbTable(this, "DraftsTable").table;
