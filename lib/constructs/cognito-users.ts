@@ -190,6 +190,7 @@ export class CognitoUsers extends Construct {
 			managedPolicies: [
 				ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"),
 				ManagedPolicy.fromAwsManagedPolicyName("AmazonDynamoDBFullAccess"),
+				ManagedPolicy.fromAwsManagedPolicyName("AmazonSQSFullAccess"),
 			],
 		});
 
