@@ -75,12 +75,9 @@ export class CognitoUsers extends Construct {
 			oAuth: {
 				callbackUrls: [
 					process.env.DEV_CALLBACK_URL!,
-					// process.env.PROD_CALLBACK_URL!,
+					process.env.PROD_CALLBACK_URL!,
 				],
-				logoutUrls: [
-					process.env.DEV_LOGOUT_URL!,
-					// process.env.PROD_LOGOUT_URL!,
-				],
+				logoutUrls: [process.env.DEV_LOGOUT_URL!, process.env.PROD_LOGOUT_URL!],
 				scopes: [OAuthScope.OPENID, OAuthScope.EMAIL, OAuthScope.PROFILE],
 			},
 			authFlows: {
