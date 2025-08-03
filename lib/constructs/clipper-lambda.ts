@@ -26,8 +26,8 @@ export class ClipperLambda extends Construct {
 			handler: "com.hooparchives.Clipper::handleRequest",
 			code: Code.fromAsset(lambdaPath),
 			memorySize: 3008, // max on java runtimes
-			timeout: Duration.minutes(5),
-			ephemeralStorageSize: Size.gibibytes(6), // `/tmp` space
+			timeout: Duration.minutes(10),
+			ephemeralStorageSize: Size.gibibytes(8), // `/tmp` space
 			environment: {
 				AWS_S3_BUCKET_NAME: String(process.env.AWS_S3_BUCKET_NAME),
 				AWS_DDB_GAMES_TABLE: String(process.env.AWS_DDB_GAMES_TABLE),
